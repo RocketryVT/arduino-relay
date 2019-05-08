@@ -15,34 +15,34 @@ RH_RF95 rf95(RFM95_CS, RFM95_INT);
 CircularBuffer<uint8_t, BUFFER_SIZE> buf1, buf2, buf3, buf4;
 
 /**
- * Parses the provided buffer for packets, and removes all bytes which were processed.
- */
+    Parses the provided buffer for packets, and removes all bytes which were processed.
+*/
 CircularBuffer<uint8_t, BUFFER_SIZE> parse_packet(CircularBuffer<uint8_t, BUFFER_SIZE>& buf);
 
 /**
- * Gets all data from a serial port, up to the maximum size of the circular buffer.
- */
+    Gets all data from a serial port, up to the maximum size of the circular buffer.
+*/
 void serial_receive(CircularBuffer<uint8_t, BUFFER_SIZE> &buffer, HardwareSerial &dstream);
 
 /**
- * Listens for a short time and stores all data from the radio,
- * up to the maximum size of the buffer.
- */
+    Listens for a short time and stores all data from the radio,
+    up to the maximum size of the buffer.
+*/
 void radio_recieve(CircularBuffer<uint8_t, BUFFER_SIZE> &buffer);
 
 /**
- * Writes a data buffer to 2 serial ports and the radio, and sends a confirmation
- * packet to the source serial port.
- */
+    Writes a data buffer to 2 serial ports and the radio, and sends a confirmation
+    packet to the source serial port.
+*/
 void echo_serial(CircularBuffer<uint8_t, BUFFER_SIZE> &buffer,
-    HardwareSerial &source, HardwareSerial &dest1, HardwareSerial &dest2);
+                 HardwareSerial &source, HardwareSerial &dest1, HardwareSerial &dest2);
 
 /**
- * Writes a data buffer to 3 serial ports, and sends a confirmation packet
- * over the radio.
- */
+    Writes a data buffer to 3 serial ports, and sends a confirmation packet
+    over the radio.
+*/
 void echo_radio(CircularBuffer<uint8_t, BUFFER_SIZE> &buffer,
-    HardwareSerial &dest1, HardwareSerial &dest2, HardwareSerial &dest3);
+                HardwareSerial &dest1, HardwareSerial &dest2, HardwareSerial &dest3);
 
 void setup()
 {
@@ -181,10 +181,13 @@ void echo_serial(CircularBuffer<uint8_t, BUFFER_SIZE> &buffer,
         toSend[i] = buffer.shift();
     }
 
-    source.write(REPLY_PACKET, sizeof(REPLY_PACKET));
-    dest1.write(toSend, bufferSize);
-    dest2.write(toSend, bufferSize);
-    rf95.send(toSend, bufferSize);
+    if (bufferSize > 0)
+    {
+        source.write(REPLY_PACKET, sizeof(REPLY_PACKET));
+        dest1.write(toSend, bufferSize);
+        dest2.write(toSend, bufferSize);
+        rf95.send(toSend, bufferSize);
+    }
 }
 
 void echo_radio(CircularBuffer<uint8_t, BUFFER_SIZE> &buffer,
@@ -197,8 +200,11 @@ void echo_radio(CircularBuffer<uint8_t, BUFFER_SIZE> &buffer,
         toSend[i] = buffer.shift();
     }
 
-    rf95.send(REPLY_PACKET, sizeof(REPLY_PACKET));
-    dest1.write(toSend, bufferSize);
-    dest2.write(toSend, bufferSize);
-    dest3.write(toSend, bufferSize);
+    if (bufferSize > 0)
+    {
+        rf95.send(REPLY_PACKET, sizeof(REPLY_PACKET));
+        dest1.write(toSend, bufferSize);
+        dest2.write(toSend, bufferSize);
+        dest3.write(toSend, bufferSize);
+    }
 }
