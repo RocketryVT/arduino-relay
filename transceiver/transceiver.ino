@@ -6,6 +6,10 @@ const uint8_t RFM95_CS = 4;
 const uint8_t RFM95_RST = 2;
 const uint8_t RFM95_INT = 3;
 const double RF95_FREQ = 434.0;
+const uint8_t TX_POWER = 23;
+
+// transciever specific greeting
+const char* GREETING = "[GAMMA] has joined the game";
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
@@ -14,7 +18,7 @@ void setup()
     pinMode(RFM95_RST, OUTPUT);
     digitalWrite(RFM95_RST, HIGH);
 
-    Serial.begin(38400);
+    Serial.begin(921600);
     delay(100);
 
     digitalWrite(RFM95_RST, LOW);
@@ -35,7 +39,13 @@ void setup()
     }
     Serial.print("Set Freq to: ");
     Serial.println(RF95_FREQ);
-    rf95.setTxPower(23, false);
+    rf95.setTxPower(TX_POWER);
+
+    delay(1000);
+
+    rf95.send(GREETING, strlen(GREETING));
+
+    delay(1000);
 }
 
 void loop()
@@ -50,8 +60,8 @@ void loop()
     }
 
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-    uint8_t len = sizeof(buf);
 
+    uint8_t len = sizeof(buf);
     if (rf95.waitAvailableTimeout(100) && rf95.recv(buf, &len))
     {
         Serial.write(buf, len);
